@@ -1,0 +1,274 @@
+---
+title: "Master_project"
+author: "Perrine Kergoat"
+date: "2023-09-28"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Open VCF file
+```{r}
+library(vcfR)
+library(hierfstat)
+library(gaston)
+library(stats)
+
+vcf_file <- read.VCF("/Users/perrinekergoat/Master_Project/Code/Data/Simu.vcf")
+print(vcf_file)
+
+#####
+plot(vcf_file@snps$pos,vcf_file@snps$pos)
+abline(h=500000, col ="red")
+
+which(vcf_file@snps$pos==500000)
+# 3351
+
+i = 0
+for (start in start_bound){
+  i <- i + 1
+  end <- start + l_window
+  
+  if (end > nb_snps) {end = nb_snps}
+  if (start == nb_snps) {break}
+  
+  abline(h = min(vcf_file@snps$pos[start:end]))
+  abline(h = max(vcf_file@snps$pos[start:end]))
+}
+
+for (i in 0:20){
+S = 2000
+start = S + (100*i)
+end = start + 1000
+reduced_vcf <- vcf_mat[,start:end]
+kinship_calc <- beta.dosage(reduced_vcf)
+image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
+}
+
+
+###
+
+M = matrix(c(1:100), ncol = 10)
+M[upper.tri(M, diag = TRUE)]
+
+#####
+
+```
+
+
+### Convert VCF file to matrix
+```{r}
+vcf_mat <- as.matrix(vcf_file)
+beta_mat <- beta.dosage(vcf_mat)
+```
+
+### Get SNPs and parameters to cut the genomes
+```{r}
+data_snps <- vcf_file@snps
+nb_snps <- nrow(data_snps)
+nb_windows <- nb_snps %/% 1000 # nb of snps in windows
+l_window <- nb_snps %/% nb_windows 
+start_bound <- seq(from = 1, to = nb_snps, by = l_window)
+#end_bound[6] <- nb_snps
+
+print(nb_snps)
+print(nb_windows)
+print(l_window)
+
+reduced_vcf <- vcf_mat[,start:end]
+kinship_calc <- beta.dosage(reduced_vcf)
+
+
+
+
+```
+
+### Create windows in the dosage matrix 
+```{r}
+list_beta <- list()
+i <- 0 
+
+for (start in start_bound){
+  i <- i + 1
+  end <- start + l_window
+  
+  if (end > nb_snps) {end = nb_snps}
+  if (start == nb_snps) {break}
+  
+  reduced_vcf <- vcf_mat[,start:end]
+  kinship_calc <- beta.dosage(reduced_vcf)
+  #print(typeof (test))
+  list_beta[[i]] <- kinship_calc
+}
+
+#print(test)
+```
+
+### Windows matrix output
+```{r}
+for (num in 1:nb_windows) {
+  name_file <- paste0("/Users/perrinekergoat/Master_Project/Code/Data/HM-window nb ",num,".png")
+  png(file = name_file, width = 2000, height = 2000)
+  heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
+  dev.off()
+}
+```
+
+### Whole genome matrix output 
+```{r}
+png(file="/Users/perrinekergoat/Master_Project/Code/Data/HM-global.png",
+    width=20000, height=20000)
+heatmap(beta_mat, Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
+dev.off()
+```
+
+### Mahalanobis distance
+```{r}
+#mahalanobis.dist(data.x = list_dos[[1]], data.y = list_dos[[2]])
+
+#mahala_results <- mahalanobis.dist(data.x = list_dos[[1]], data.y = list_dos[[2]])
+```
+
+### Test
+```{r}
+list_diff <- list()
+
+for (j in 1:nb_windows){
+  tot_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
+  for (k in 1:nb_windows){
+    if (j != k){
+      diff_dos <- abs(list_dos[[j]] - list_dos[[k]])
+      tot_diff <- tot_diff + diff_dos
+      list_diff[[j]] <- tot_diff
+    }
+  }
+}
+
+```
+
+### Test
+```{r}
+View(list_diff[[1]])
+View(list_diff[[2]])
+View(list_diff[[3]])
+```
+
+### Test
+```{r}
+list_sum_diff <- list()
+
+for (l in 1:nb_windows) {
+  sum_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
+    for (m in 1:nb_windows) {
+      if (m != l){
+        sum_diff <- sum_diff + list_diff[[m]]
+        list_sum_diff[[l]] <- sum_diff
+      }
+   }
+}
+
+
+list_sum_diff <- list()
+
+for (l in 1:nb_windows) {
+  sum_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
+    for (m in 1:nb_windows) {
+      if (m != l){
+        sum_diff <- sum_diff + list_diff[[m]]
+        list_sum_diff[[l]] <- sum_diff
+      }
+   }
+}
+```
+
+```{r}
+data1 <- c(list_diff[[1]])
+data2 <- c(list_sum_diff[[1]])
+hist(x = data1, col = "cyan")
+hist(x = data2, col = "purple", add = TRUE)
+```
+
+```{r}
+data1 <- c(list_diff[[2]])
+data2 <- c(list_sum_diff[[2]])
+hist(x = data1, col = "cyan")
+hist(x = data2, col = "purple", add = TRUE)
+```
+
+```{r}
+data1 <- c(list_diff[[3]])
+data2 <- c(list_sum_diff[[3]])
+hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
+hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
+```
+
+```{r}
+add.alpha <- function(col, alpha=1){
+  if(missing(col))
+    stop("Please provide a vector of colours.")
+  apply(sapply(col, col2rgb)/255, 2, 
+        function(x) 
+          rgb(x[1], x[2], x[3], alpha=alpha))  
+}
+
+
+data1 <- c(list_diff[[4]])
+data2 <- c(list_sum_diff[[4]])
+hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
+hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
+```
+
+```{r}
+data1 <- c(list_diff[[5]])
+data2 <- c(list_sum_diff[[5]])
+hist(x = data1, col = "cyan")
+hist(x = data2, col = "purple", add = TRUE)
+```
+
+```{r}
+data1 <- c(list_diff[[6]])
+data2 <- c(list_sum_diff[[6]])
+hist(x = data1, col = "cyan")
+hist(x = data2, col = "purple", add = TRUE)
+```
+
+
+
+
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+
+
+
+
+### Density plot
+```{r}
+#View(list_dos[[1]]$"tsk_1")
+
+dim(list_dos[[1]])
+
+par(mfrow = c(2, 3))
+plot(x = list_dos[[1]][1:2000], ylim = c(-2,2))
+plot(x = list_dos[[2]][1:2000], ylim = c(-2,2))
+plot(x = list_dos[[3]][1:2000], ylim = c(-2,2))
+plot(x = list_dos[[4]][1:2000], ylim = c(-2,2))
+plot(x = list_dos[[5]][1:2000], ylim = c(-2,2))
+plot(x = list_dos[[6]][1:2000], ylim = c(-2,2))
+```
+
+
+
+
