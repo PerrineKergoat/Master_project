@@ -21,7 +21,7 @@ initialize() {
 1 late() {
 	
 	target = sample(p1.genomes, 1);
-   target.addNewDrawnMutation(m2, 500000); // introduce the sweep mutation
+   target.addNewDrawnMutation(m2, 5e7); // introduce the sweep mutation
 
 	sim.outputFull(tempdir() + "slim_" + simID + ".txt"); // save the state of the simulation
 }
