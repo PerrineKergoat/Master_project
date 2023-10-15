@@ -5,7 +5,7 @@ import sys
 
 ### Recapitation 
 
-orig_ts = tskit.load("/Users/perrinekergoat/Master_Project/Code/Data/Results2.trees")
+orig_ts = tskit.load("/Users/perrinekergoat/Master_Project/Code/Data/Results1.trees")
 rts = pyslim.recapitate(orig_ts,
             recombination_rate=1e-8,
             ancestral_Ne=2000, 
