@@ -9,7 +9,7 @@ initialize() {
 
 1 early() {
 	defineConstant("simID", getSeed());
-	nb_subpop = 2;
+	nb_subpop = 2; // nb of subpop
 	for (i in 1:nb_subpop)
 		sim.addSubpop(i, 1000);
 	for (i in 1:nb_subpop)
@@ -21,7 +21,7 @@ initialize() {
 1 late() {
 	
 	target = sample(p1.genomes, 1);
-   target.addNewDrawnMutation(m2, 500000); // introduce the sweep mutation
+   target.addNewDrawnMutation(m2, 5e7); // introduce the sweep mutation
 
 	sim.outputFull(tempdir() + "slim_" + simID + ".txt"); // save the state of the simulation
 }
@@ -38,7 +38,7 @@ mutationEffect(m2, p2) { return 1.0; } // return --> 1-hs (fitness, h coeff domi
 		sim.readFromPopulationFile(tempdir() + "slim_" + simID + ".txt"); // go back to tick 1000
 		setSeed(rdunif(1, 0, asInteger(2^62) - 1)); // start a newly seeded run
 		
-		nb_subpop = 2;
+		nb_subpop = 2; // nb of subpop
 		for (i in 1:nb_subpop)
 			for (j in 1:nb_subpop)
 				if (i != j)
