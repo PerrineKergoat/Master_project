@@ -16,11 +16,18 @@ knitr::opts_chunk$set(echo = TRUE)
 library(vcfR)
 library(hierfstat)
 library(gaston)
-library(stats)
+#library(stats)
+library(dgof)
+library(outliers)
 
 vcf_file <- read.VCF("/Users/perrinekergoat/Master_Project/Code/Data/Simu.vcf")
 print(vcf_file)
 
+
+
+```
+
+```{#r}
 #####
 plot(vcf_file@snps$pos,vcf_file@snps$pos)
 abline(h=500000, col ="red")
@@ -56,14 +63,14 @@ M = matrix(c(1:100), ncol = 10)
 M[upper.tri(M, diag = TRUE)]
 
 #####
-
 ```
+
 
 
 ### Convert VCF file to matrix
 ```{r}
 vcf_mat <- as.matrix(vcf_file)
-beta_mat <- beta.dosage(vcf_mat)
+#beta_mat <- beta.dosage(vcf_mat)
 ```
 
 ### Get SNPs and parameters to cut the genomes
@@ -79,8 +86,10 @@ print(nb_snps)
 print(nb_windows)
 print(l_window)
 
-reduced_vcf <- vcf_mat[,start:end]
-kinship_calc <- beta.dosage(reduced_vcf)
+print(start_bound)
+
+#reduced_vcf <- vcf_mat[,start:end]
+#kinship_calc <- beta.dosage(reduced_vcf)
 
 
 
@@ -92,17 +101,24 @@ kinship_calc <- beta.dosage(reduced_vcf)
 list_beta <- list()
 i <- 0 
 
+par(mfrow = c(2,3))
 for (start in start_bound){
   i <- i + 1
+  print(i)
   end <- start + l_window
   
   if (end > nb_snps) {end = nb_snps}
   if (start == nb_snps) {break}
+  if (end-start <= nb_windows) {break}
+  else {
+    reduced_vcf <- vcf_mat[,start:end]
+    kinship_calc <- beta.dosage(reduced_vcf)
+    #print(typeof (test))
+    list_beta[[i]] <- kinship_calc
+    image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0("Window",":",i, " (start at: ", start, " end at: ", end))
+  }
   
-  reduced_vcf <- vcf_mat[,start:end]
-  kinship_calc <- beta.dosage(reduced_vcf)
-  #print(typeof (test))
-  list_beta[[i]] <- kinship_calc
+  
 }
 
 #print(test)
@@ -110,12 +126,15 @@ for (start in start_bound){
 
 ### Windows matrix output
 ```{r}
+par(mfrow = c(2,3))
 for (num in 1:nb_windows) {
   name_file <- paste0("/Users/perrinekergoat/Master_Project/Code/Data/HM-window nb ",num,".png")
   png(file = name_file, width = 2000, height = 2000)
-  heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
+  heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE, main = paste0("Window",":",num)) # enlever le tri des individus 
   dev.off()
 }
+
+image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
 ```
 
 ### Whole genome matrix output 
@@ -133,79 +152,48 @@ dev.off()
 #mahala_results <- mahalanobis.dist(data.x = list_dos[[1]], data.y = list_dos[[2]])
 ```
 
-### Test
+### Convert beta matrices in vectors (onnly half of the matrices)
 ```{r}
-list_diff <- list()
+list_half_beta <- list()
 
 for (j in 1:nb_windows){
-  tot_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
-  for (k in 1:nb_windows){
-    if (j != k){
-      diff_dos <- abs(list_dos[[j]] - list_dos[[k]])
-      tot_diff <- tot_diff + diff_dos
-      list_diff[[j]] <- tot_diff
+  print(j)
+  list_half_beta[[j]] <- list_beta[[j]][upper.tri(list_beta[[j]], diag = TRUE)]
+}
+
+```
+
+
+
+
+### Cut the genomes in windows 
+```{r}
+list_diff <- list()
+tot_diff <- list()
+
+for (k in 1:nb_windows){
+  m <- 0
+  list_diff <- list()
+  for (l in 1:nb_windows){
+    if (l != k){
+      diff_beta <- abs(list_half_beta[[k]] - list_half_beta[[l]])
+      #diff_beta <- sqrt(list_half_beta[[k]]^2 + list_half_beta[[l]]^2)
+      m <- m + 1
+      list_diff[[m]] <- diff_beta
+      #print(diff_beta[1:50])
     }
+    print(paste0("list ", k, " minus list ", l))
+    print(length(list_diff))
+    
   }
+  tot_diff[[k]] <- Reduce("+", list_diff)
 }
 
+tot_sum <- Reduce("+", tot_diff)
+
 ```
 
-### Test
-```{r}
-View(list_diff[[1]])
-View(list_diff[[2]])
-View(list_diff[[3]])
-```
-
-### Test
-```{r}
-list_sum_diff <- list()
-
-for (l in 1:nb_windows) {
-  sum_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
-    for (m in 1:nb_windows) {
-      if (m != l){
-        sum_diff <- sum_diff + list_diff[[m]]
-        list_sum_diff[[l]] <- sum_diff
-      }
-   }
-}
-
-
-list_sum_diff <- list()
-
-for (l in 1:nb_windows) {
-  sum_diff <- matrix(0, nrow = nb_ind, ncol = nb_ind)
-    for (m in 1:nb_windows) {
-      if (m != l){
-        sum_diff <- sum_diff + list_diff[[m]]
-        list_sum_diff[[l]] <- sum_diff
-      }
-   }
-}
-```
-
-```{r}
-data1 <- c(list_diff[[1]])
-data2 <- c(list_sum_diff[[1]])
-hist(x = data1, col = "cyan")
-hist(x = data2, col = "purple", add = TRUE)
-```
-
-```{r}
-data1 <- c(list_diff[[2]])
-data2 <- c(list_sum_diff[[2]])
-hist(x = data1, col = "cyan")
-hist(x = data2, col = "purple", add = TRUE)
-```
-
-```{r}
-data1 <- c(list_diff[[3]])
-data2 <- c(list_sum_diff[[3]])
-hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
-hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
-```
-
+### plot the distribution of the window and the mean one 
 ```{r}
 add.alpha <- function(col, alpha=1){
   if(missing(col))
@@ -216,24 +204,60 @@ add.alpha <- function(col, alpha=1){
 }
 
 
-data1 <- c(list_diff[[4]])
-data2 <- c(list_sum_diff[[4]])
-hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
-hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
+#data1 <- c(tot_diff[[4]])
+#data0 <- c(tot_sum)
+#hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
+#hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
+
+data0 <- Reduce("+", tot_diff)/nb_windows
+
+par(mfrow = c(2,3))
+for (i in 1:25){
+  S = 1
+  start = S + (10*i)
+  end = start + 1000
+  data <- paste0("data", i)
+  hist(x = tot_diff[[i]], col = "cyan", main = paste0("Window",":",i), xlim = c(0,200), ylim = c(0,1e6))
+  hist(x = data0, col = add.alpha("purple",.2), add = TRUE)
+}
+
+```
+
+
+### Kolmogorov-Smirnov Test
+```{r}
+results_ks <- list()
+
+for (n in 1:nb_windows) {
+  res <- ks.test(x = data0, y = tot_diff[[n]])
+  results_ks[[n]] <- res$statistic[[1]]
+  print(n)
+}
+
 ```
 
 ```{r}
-data1 <- c(list_diff[[5]])
-data2 <- c(list_sum_diff[[5]])
-hist(x = data1, col = "cyan")
-hist(x = data2, col = "purple", add = TRUE)
+essai <- ks.test(x = data0, y = tot_diff[[31]])
+print(essai$statistic[[1]])
 ```
 
 ```{r}
-data1 <- c(list_diff[[6]])
-data2 <- c(list_sum_diff[[6]])
-hist(x = data1, col = "cyan")
-hist(x = data2, col = "purple", add = TRUE)
+plot(unlist(results_ks))
+hist(unlist(results_ks))
+```
+
+### Detect if a window is significantly further from the mean of all windows
+```{r}
+grubb_res <- grubbs.test(unlist(results_ks), type = 10)
+if (grubb_res$p.value < 0.05){
+  w_interest <- which.max(results_ks)
+  print(w_interest)
+}
+```
+
+### Get the corresponding place to look at in the genome 
+```{r}
+
 ```
 
 
@@ -242,32 +266,26 @@ hist(x = data2, col = "purple", add = TRUE)
 
 ```{r}
 
-
 ```
 
+### Test 
 ```{r}
+a <- c(2,3,4,5)
+b <- c(1,1,1,1)
 
+c <- a-b
+print(c)
+
+print(a^2)
+print(sqrt(4*b))
+
+M = matrix(c(1:100), ncol = 10)
+M[upper.tri(M, diag = TRUE)]
 
 ```
 
 
 
-
-
-### Density plot
-```{r}
-#View(list_dos[[1]]$"tsk_1")
-
-dim(list_dos[[1]])
-
-par(mfrow = c(2, 3))
-plot(x = list_dos[[1]][1:2000], ylim = c(-2,2))
-plot(x = list_dos[[2]][1:2000], ylim = c(-2,2))
-plot(x = list_dos[[3]][1:2000], ylim = c(-2,2))
-plot(x = list_dos[[4]][1:2000], ylim = c(-2,2))
-plot(x = list_dos[[5]][1:2000], ylim = c(-2,2))
-plot(x = list_dos[[6]][1:2000], ylim = c(-2,2))
-```
 
 
 
