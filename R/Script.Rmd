@@ -27,10 +27,10 @@ print(vcf_file)
 
 ```
 
-```{#r}
+```{r}
 #####
 plot(vcf_file@snps$pos,vcf_file@snps$pos)
-abline(h=500000, col ="red")
+abline(h=5000000, col ="red")
 
 which(vcf_file@snps$pos==500000)
 # 3351
@@ -71,7 +71,7 @@ M[upper.tri(M, diag = TRUE)]
 ```{r}
 vcf_mat <- as.matrix(vcf_file)
 #beta_mat <- beta.dosage(vcf_mat)
-```
+``` 
 
 ### Get SNPs and parameters to cut the genomes
 ```{r}
@@ -129,9 +129,9 @@ for (start in start_bound){
 par(mfrow = c(2,3))
 for (num in 1:nb_windows) {
   name_file <- paste0("/Users/perrinekergoat/Master_Project/Code/Data/HM-window nb ",num,".png")
-  png(file = name_file, width = 2000, height = 2000)
-  heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE, main = paste0("Window",":",num)) # enlever le tri des individus 
-  dev.off()
+  #png(file = name_file, width = 2000, height = 2000)
+  #heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE, main = paste0("Window",":",num)) # enlever le tri des individus 
+  #dev.off()
 }
 
 image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
@@ -139,10 +139,9 @@ image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
 
 ### Whole genome matrix output 
 ```{r}
-png(file="/Users/perrinekergoat/Master_Project/Code/Data/HM-global.png",
-    width=20000, height=20000)
-heatmap(beta_mat, Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
-dev.off()
+#png(file="/Users/perrinekergoat/Master_Project/Code/Data/HM-global.png", width=20000, height=20000)
+#heatmap(beta_mat, Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
+#dev.off()
 ```
 
 ### Mahalanobis distance
@@ -182,11 +181,12 @@ for (k in 1:nb_windows){
       list_diff[[m]] <- diff_beta
       #print(diff_beta[1:50])
     }
-    print(paste0("list ", k, " minus list ", l))
-    print(length(list_diff))
+    #print(paste0("list ", k, " minus list ", l))
+    #print(length(list_diff))
     
   }
   tot_diff[[k]] <- Reduce("+", list_diff)
+  print(k)
 }
 
 tot_sum <- Reduce("+", tot_diff)
@@ -212,7 +212,7 @@ add.alpha <- function(col, alpha=1){
 data0 <- Reduce("+", tot_diff)/nb_windows
 
 par(mfrow = c(2,3))
-for (i in 1:25){
+for (i in 1:nb_windows){
   S = 1
   start = S + (10*i)
   end = start + 1000
@@ -253,6 +253,9 @@ if (grubb_res$p.value < 0.05){
   w_interest <- which.max(results_ks)
   print(w_interest)
 }
+
+max_w <- which.max(results_ks)
+print(paste0("Not significant: ", max_w))
 ```
 
 ### Get the corresponding place to look at in the genome 
@@ -268,7 +271,7 @@ if (grubb_res$p.value < 0.05){
 
 ```
 
-### Test 
+### Brouillon  
 ```{r}
 a <- c(2,3,4,5)
 b <- c(1,1,1,1)
