@@ -42,7 +42,7 @@ mutationEffect(m2, p2) { return 1.0; } // return --> 1-hs (fitness, h coeff domi
 		for (i in 1:nb_subpop)
 			for (j in 1:nb_subpop)
 				if (i != j)
-					sim.subpopulations[i-1].setMigrationRates(j, 0.05);
+					sim.subpopulations[i-1].setMigrationRates(j, 0.001);
 			
 		//target = sample(p1.genomes, 1);
 		//target.addNewDrawnMutation(m2, 50000); // re-introduce the sweep mutation
