@@ -16,9 +16,11 @@ knitr::opts_chunk$set(echo = TRUE)
 library(vcfR)
 library(hierfstat)
 library(gaston)
-#library(stats)
+library(stats)
+library(StatMatch)
 library(dgof)
 library(outliers)
+library(nortest)
 
 vcf_file <- read.VCF("/Users/perrinekergoat/Master_Project/Code/Data/Simu.vcf")
 print(vcf_file)
@@ -70,7 +72,7 @@ M[upper.tri(M, diag = TRUE)]
 ### Convert VCF file to matrix
 ```{r}
 vcf_mat <- as.matrix(vcf_file)
-#beta_mat <- beta.dosage(vcf_mat)
+beta_mat <- beta.dosage(vcf_mat)
 ``` 
 
 ### Get SNPs and parameters to cut the genomes
@@ -129,19 +131,21 @@ for (start in start_bound){
 par(mfrow = c(2,3))
 for (num in 1:nb_windows) {
   name_file <- paste0("/Users/perrinekergoat/Master_Project/Code/Data/HM-window nb ",num,".png")
-  #png(file = name_file, width = 2000, height = 2000)
-  #heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE, main = paste0("Window",":",num)) # enlever le tri des individus 
-  #dev.off()
+  png(file = name_file, width = 2000, height = 2000)
+  heatmap(list_beta[[num]], Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE, main = paste0("Window",":",num)) # enlever le tri des individus 
+  dev.off()
 }
 
-image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
+#image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
 ```
 
 ### Whole genome matrix output 
 ```{r}
-#png(file="/Users/perrinekergoat/Master_Project/Code/Data/HM-global.png", width=20000, height=20000)
-#heatmap(beta_mat, Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
+png(file="/Users/perrinekergoat/Master_Project/Code/Data/HM-global.png", width=20000, height=20000)
+heatmap(beta_mat, Colv = NA, Rowv = NA, scale = "none", keep.dendro = FALSE) # enlever le tri des individus 
 #dev.off()
+
+image(beta_mat[c(1:200)*10,c(1:200)*10])
 ```
 
 ### Mahalanobis distance
@@ -156,9 +160,11 @@ image(kinship_calc[c(1:200)*10,c(1:200)*10], main = paste0(start,":",end))
 list_half_beta <- list()
 
 for (j in 1:nb_windows){
-  print(j)
+  #print(j)
   list_half_beta[[j]] <- list_beta[[j]][upper.tri(list_beta[[j]], diag = TRUE)]
 }
+
+list_half_gen <- upper.tri(beta_mat, diag = TRUE)
 
 ```
 
@@ -167,31 +173,57 @@ for (j in 1:nb_windows){
 
 ### Cut the genomes in windows 
 ```{r}
-list_diff <- list()
-tot_diff <- list()
+list_diff1 <- list()
+list_diff2 <- list()
+list_mean1 <-list()
+list_mean2 <- list()
+tot_diff1 <- list()
+tot_diff2 <- list()
 
 for (k in 1:nb_windows){
   m <- 0
   list_diff <- list()
   for (l in 1:nb_windows){
     if (l != k){
-      diff_beta <- abs(list_half_beta[[k]] - list_half_beta[[l]])
-      #diff_beta <- sqrt(list_half_beta[[k]]^2 + list_half_beta[[l]]^2)
-      m <- m + 1
-      list_diff[[m]] <- diff_beta
+      diff_beta1 <- abs(list_half_beta[[k]] - list_half_beta[[l]])
+      diff_beta2 <- sqrt(list_half_beta[[k]]^2 + list_half_beta[[l]]^2)
+      #diff_beta3 <- mahalanobis.dist(data.x = list_half_beta[[k]], data.y = list_half_beta[[l]])
+      
+      list_mean1[[k]] <- mean(diff_beta1)
+      list_mean2[[k]] <- mean(diff_beta2)
+      
+      list_diff1[[k]] <- diff_beta1
+      list_diff2[[k]] <- diff_beta2
       #print(diff_beta[1:50])
+      
+      m <- m + 1
     }
     #print(paste0("list ", k, " minus list ", l))
     #print(length(list_diff))
     
   }
-  tot_diff[[k]] <- Reduce("+", list_diff)
+  tot_diff1[[k]] <- Reduce("+", list_diff1)
+  tot_diff2[[k]] <- Reduce("+", list_diff2)
   print(k)
 }
 
-tot_sum <- Reduce("+", tot_diff)
+tot_sum1 <- Reduce("+", tot_diff1)
+tot_sum2 <- Reduce("+", tot_diff2)
+```
+
+
+```{r}
+diff_win1 <- list()
+diff_win2 <- list()
+
+for (k in 1:nb_windows){
+  
+  diff_win1[k] <- abs(list_half_beta[[k]] - list_half_gen)
+  diff_win2[k] <- sqrt(list_half_beta[[k]]^2 + list_half_gen^2)
+}
 
 ```
+
 
 ### plot the distribution of the window and the mean one 
 ```{r}
@@ -209,7 +241,8 @@ add.alpha <- function(col, alpha=1){
 #hist(x = data1, col = add.alpha("cyan",.8), breaks = c(0:75), ylim = c(0,1700000))
 #hist(x = data2, col = add.alpha("purple",.5), add = TRUE, breaks = c(0:75))
 
-data0 <- Reduce("+", tot_diff)/nb_windows
+data_glob1 <- Reduce("+", tot_diff1)/nb_windows
+data_glob2 <- Reduce("+", tot_diff2)/nb_windows
 
 par(mfrow = c(2,3))
 for (i in 1:nb_windows){
@@ -217,46 +250,161 @@ for (i in 1:nb_windows){
   start = S + (10*i)
   end = start + 1000
   data <- paste0("data", i)
-  hist(x = tot_diff[[i]], col = "cyan", main = paste0("Window",":",i), xlim = c(0,200), ylim = c(0,1e6))
-  hist(x = data0, col = add.alpha("purple",.2), add = TRUE)
+  hist(x = tot_diff1[[i]], col = "cyan", main = paste0("Window:",i, " (addition)"), xlim = c(0,200), ylim = c(0,1e6))
+  hist(x = data_glob1, col = add.alpha("purple",.2), add = TRUE)
 }
+hist(x = data_glob1, col = add.alpha("purple",.2))
+
+par(mfrow = c(2,3))
+for (i in 1:nb_windows){
+  S = 1
+  start = S + (10*i)
+  end = start + 1000
+  data <- paste0("data", i)
+  hist(x = tot_diff2[[i]], col = "cyan", main = paste0("Window:",i, " (sqrt)"), xlim = c(0,200), ylim = c(0,1e6))
+  hist(x = data_glob2, col = add.alpha("purple",.2), add = TRUE)
+}
+hist(x = data_glob2, col = add.alpha("purple",.2))
+
+
+
+
+
+
+
+
+par(mfrow = c(2,3))
+for (i in 1:nb_windows){
+  S = 1
+  start = S + (10*i)
+  end = start + 1000
+  data <- paste0("data", i)
+  hist(x = diff_win1[[i]], col = "cyan", main = paste0("Window:",i, " (addition)"), xlim = c(0,200), ylim = c(0,1e6))
+  hist(x = list_half_gen, col = add.alpha("purple",.2), add = TRUE)
+}
+hist(x = data_glob1, col = add.alpha("purple",.2))
+
+par(mfrow = c(2,3))
+for (i in 1:nb_windows){
+  S = 1
+  start = S + (10*i)
+  end = start + 1000
+  data <- paste0("data", i)
+  hist(x = diff_win2[[i]], col = "cyan", main = paste0("Window:",i, " (sqrt)"), xlim = c(0,200), ylim = c(0,1e6))
+  hist(x = data_glob2, col = add.alpha("purple",.2), add = TRUE)
+}
+hist(x = list_half_gen, col = add.alpha("purple",.2))
+
 
 ```
 
 
 ### Kolmogorov-Smirnov Test
 ```{r}
-results_ks <- list()
+results_ks1 <- list()
+tot_resks1 <- list()
+results_ks2 <- list()
 
 for (n in 1:nb_windows) {
-  res <- ks.test(x = data0, y = tot_diff[[n]])
-  results_ks[[n]] <- res$statistic[[1]]
+  res <- ks.test(x = data_glob1, y = tot_diff1[[n]])
+  tot_resks1[[n]] <- res
+  results_ks1[[n]] <- res$statistic[[1]]
+  print(n)
+}
+
+for (n in 1:nb_windows) {
+  res <- ks.test(x = data_glob2, y = tot_diff2[[n]])
+  results_ks2[[n]] <- res$statistic[[1]]
   print(n)
 }
 
 ```
 
 ```{r}
-essai <- ks.test(x = data0, y = tot_diff[[31]])
-print(essai$statistic[[1]])
+tot_resks1[[1]]
 ```
 
+
 ```{r}
-plot(unlist(results_ks))
-hist(unlist(results_ks))
+plot(as.numeric(results_ks1))
+plot(as.numeric(results_ks2))
+
+hist(as.numeric(results_ks1))
+hist(as.numeric(results_ks2))
+
+typeof(results_ks1)
 ```
 
-### Detect if a window is significantly further from the mean of all windows
+
+### Detect if a window is significantly further from the mean of all other windows
 ```{r}
-grubb_res <- grubbs.test(unlist(results_ks), type = 10)
-if (grubb_res$p.value < 0.05){
-  w_interest <- which.max(results_ks)
-  print(w_interest)
+grubb_res1 <- grubbs.test(as.numeric(results_ks1), type = 10)
+if (grubb_res1$p.value < 0.05){
+  w_interest1 <- which.max(results_ks1)
+  print(w_interest1)
 }
 
-max_w <- which.max(results_ks)
-print(paste0("Not significant: ", max_w))
+max_w1 <- which.max(results_ks1)
+print(paste0("Not significant (addition): ", max_w1))
+
+
+grubb_res2 <- grubbs.test(as.numeric(results_ks2), type = 10)
+if (grubb_res2$p.value < 0.05){
+  w_interest2 <- which.max(results_ks2)
+  print(w_interest2)
+}
+
+max_w2 <- which.max(results_ks2)
+print(paste0("Not significant (sqrt): ", max_w2))
 ```
+
+
+### Using mean of the disatance of each window
+```{r}
+par(mfrow = c(1,2))
+plot(as.numeric(list_mean1), main = "Addition")
+plot(as.numeric(list_mean2), main = "Sqrt")
+
+par(mfrow = c(1,2))
+hist(as.numeric(list_mean1), main = "Addition")
+hist(as.numeric(list_mean2), main = "Sqrt")
+
+grubb_mean1 <- grubbs.test(as.numeric(list_mean1), type = 10)
+if (grubb_mean1$p.value < 0.05){
+  w_interest_m1 <- which.max(list_mean1)
+  print(w_interest_m1)
+}
+
+grubb_mean2 <- grubbs.test(as.numeric(list_mean2), type = 10)
+if (grubb_mean2$p.value < 0.05){
+  w_interest_m2 <- which.max(list_mean2)
+  print(w_interest_m2)
+}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### Get the corresponding place to look at in the genome 
 ```{r}
@@ -266,10 +414,26 @@ print(paste0("Not significant: ", max_w))
 
 
 
+### Essais
+```{r}
+norm_test1 <- ad.test(data_glob1)
+norm_test1
+
+norm_test2 <- ad.test(data_glob2)
+norm_test2
+```
+
+
+
+
+
+
 
 ```{r}
+vcf_file@snps$id[vcf_file@snps$pos == 5e6]
 
 ```
+
 
 ### Brouillon  
 ```{r}
@@ -287,7 +451,8 @@ M[upper.tri(M, diag = TRUE)]
 
 ```
 
-
+- comparisons to the global matrice 
+- 
 
 
 
