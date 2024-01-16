@@ -1,0 +1,316 @@
+---
+title: "Graph Display"
+author: "Perrine Kergoat"
+date: "2023-12-01"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(vcfR)
+library(hierfstat)
+library(gaston)
+
+load("/Users/perrinekergoat/Desktop/CheckBeta/Environments/Variance/Graph_testFST_500_35739448.RData")
+load("~/Desktop/CheckBeta/Environments/Other_methods/FST_calc_50035739448.Rdata") 
+
+
+#' Calculate the mean of each group of n elements in a vector,
+#' with an optional step size
+#'
+#' @param vecteur a numeric vector
+#' @param n a positive odd integer indicating the number of elements to consider
+#' for each group. The number has to be odd for computing reasons
+#' (could be improved in the future)
+#' @param slide an integer indicating the number of elements to slide the window
+#' forward at each iteration (default 1)
+#'
+#' @return a numeric vector containing the means of each group of n elements
+#'
+#' @examples
+#' mean_groups(1:10, 3, 1)
+#'
+#' @export
+SlidingMean <- function(vecteur, n, slide=1) {
+  # Check if number is odd
+  if((n %% 2) == 0) {
+    print(paste(n,"is Even, please provide an odd number"))
+    break
+  }
+  
+  if(n > 1) {
+    WinSizeSide = ((n-1)/2)
+  }
+  else {
+    WinSizeSide = n
+  }
+  
+  # Create a vector full of 0 for the means
+  means <- rep(0,length(vecteur))
+  
+  # Loop through all groups of n elements and calculate the mean
+  for (i in seq(from=WinSizeSide+1, to=length(vecteur)-n+WinSizeSide, by=slide)) {
+    means[i] <- mean(vecteur[(i-WinSizeSide):(i+WinSizeSide)])
+  }
+  
+  # Return the vector of mean
+  return(means)
+}
+
+#position <- (match(5e6, vcf_file@snps$pos))
+
+
+tot_min <- min(c(min(pop_summary$"mean Beta"), min(pop_summary$"max Beta"), min(pop_summary$"min Beta")))
+tot_max <- max(c(max(pop_summary$"mean Beta"), max(pop_summary$"max Beta"), max(pop_summary$"min Beta")))
+```
+
+# Parameters
+
+-   id : 35739463
+-   chromosome size : 1e7 - 1
+-   number of generations : 900
+-   dominance : 0.8
+-   selection : 0.030
+-   migration : 0.001
+-   recombination : 1e-8
+-   *Allele* frequency in subpopulation 1 : `r freq_check[1]`
+-   *Allele* frequency in subpopulation 2 : `r freq_check[2]`
+-   global Fst : `r Fst_calc$Fst`
+
+# Fst
+
+## Whole genome
+
+```{r}
+#position <- (match(5e6, vcf_file@snps$pos))
+position <- 5e6
+meanFST_500 = SlidingMean(vecteur = Fst_calc$FstSNP,n = 5001, slide = 101)
+str(Fst_calc)
+
+plot(Fst_calc$FstSNP ~ vcf_file@snps$pos, pch = 19, xlab = "Genomic position", ylab = "Pairrwise Fst")
+abline(v = position, col = "red")
+points(position,Fst_calc$FstSNP[match(5e6, vcf_file@snps$pos)], col = "red", cex = 2)
+#lines(meanFST_500, col = "cyan")
+
+#legend("topright", legend = c("Mutation position", "Fst mean (wind. of 501 SNPs)"), fill = c("red", "cyan"))
+
+```
+
+## Filtered whole genome
+
+```{r}
+#meanFST_500 = SlidingMean(vecteur = Fst_calc_maf_01$FstSNP,n = 501, slide = 1)
+#meanFST_200 = SlidingMean(vecteur = Fst_calc_maf_01$FstSNP,n = 201, slide = 1)
+#plot(Fst_calc_maf_01$FstSNP, pch = 19)
+#lines(meanFST_500, col = "cyan")
+#lines(meanFST_200, col = "green")
+#legend("topright", legend = c("Mutation position", "Fst mean (wind. of 501 SNPs)"), fill = c("cyan", "green"))
+
+```
+
+## Zoom around mutation
+
+```{r}
+#plot(Fst_calc$FstSNP, pch = 19, xlim = c(position-5000, position+5000) ) #, main = (paste0("Dominance : 0.8, sel coeff: 0.025, chromosome : 1e7-1, recomb : 1e-8, migration : 0.001, \n freq in the 2 pop :", freq_check[1], " and ", freq_check[2], ", Fst global ", Fst_calc$Fst)))
+#abline(v = position, col = "red")
+#points(position,Fst_calc$FstSNP[position], col = "red", cex = 3)
+#lines(meanFST_500, col = "cyan", lwd = 4)
+#lines(meanFST_200, col = "green", lwd = 4)
+#legend("topright", legend = c("Mutation position", "Fst mean (wind. of 501 SNPs"), fill = c("red", "cyan"))
+
+```
+
+# Pi
+
+## Whole population
+
+```{r}
+#plot(pop_summary$"pi", type = "l", col = "firebrick4")
+#abline(v = list_start[[1]], col = "black")
+#abline(v = tail(list_start, n = 1), col = "black")
+
+```
+
+## 2 subpopulations separated
+
+```{r}
+genomic_position <- list()
+i <- 0 
+for (ele in start_bound) {
+  i <- i + 1 
+  genomic_position[i] <- vcf_file@snps$pos[ele]
+}
+
+plot(pop1_summary$pi ~ unlist(genomic_position), col = "purple", type = "l", ylim = c(min(pop2_summary$pi - pop1_summary$pi - 10), max(pop1_summary$pi) + 10), xlab = "Genomic position", ylab = "pi")
+lines(pop2_summary$pi ~ unlist(genomic_position), col = "cyan")
+abline(v = genomic_position[[list_start[[1]]]], col = "grey")
+abline(v = genomic_position[[list_start[[4]]]], col = "grey")
+legend("bottomright", legend = c("pop1", "pop2", "delta-pi"), fill = c("purple", "cyan", "darkorange"))
+lines(pop2_summary$pi - pop1_summary$pi ~ unlist(genomic_position), col = "darkorange")
+
+```
+
+# Simple metrics of Beta Matrix
+
+## Variance
+
+```{r}
+plot(pop_summary$`variance Beta` ~ unlist(genomic_position), type = "l", col = "chartreuse3", xlab = "Genomic position", ylab = "Beta variance")
+abline(v = genomic_position[[list_start[[1]]]], col = "grey")
+abline(v = genomic_position[[list_start[[4]]]], col = "grey")
+
+```
+
+# Top 5% values
+
+```{r}
+#snps_fst <- as.vector(na.omit(Fst_calc$FstSNP))
+  ### Fst filtered by window
+#j <- 0
+#snps_window <- list()
+
+#for (bound in start_bound){
+  #j <- j + 1 
+  #snps_window[[j]] <- mean(snps_fst[as.integer(bound) : as.integer(bound + 99)])
+#}
+
+#data_fst <- as.numeric(snps_fst)
+  ###
+#df_fst <- nb_windows
+#perc_fst95 <- qchisq(p = 0.95, df = df_fst)
+#perc_fst5 <- qchisq(p = 0.05, df = df_fst)
+#out_fst95 <- data_fst[data_fst > perc_fst95]
+#out_fst5 <- data_fst[data_fst < perc_fst5]
+
+#data_diff_pi <- pop2_summary$pi - pop1_summary$pi
+#qqPlot(data_diff_pi)
+#qqline(data_diff_pi)
+
+#data_pi <- pop_summary$pi
+#qqPlot(data_pi)
+#qqline(data_pi)
+#mean_pi <- mean(data_pi)
+#sd_pi <- sd(data_pi)
+#perc_pi95 <- qnorm(0.99, mean = mean_pi, sd = sd_pi)
+#lim_pi95 <- pnorm(perc_pi95, mean = mean_pi, sd = sd_pi)
+#perc_pi5 <- qnorm(0.05, mean = mean_pi, sd = sd_pi)
+#out_pi95 <- data_pi[data_pi > perc_pi95]
+#out_pi5 <- data_pi[data_pi < perc_pi5]
+
+#plot(data_pi)
+#abline(h = perc_pi95, col = "red")
+
+#data_beta <- pop_summary$`variance Beta`
+#df_beta <- nb_windows
+#perc_beta95 <- qchisq(p = 0.95, df = df_beta)
+#lim_beta95 <- pchisq(perc_beta95, df = df_beta)
+#perc_beta5 <- qchisq(p = 0.05, df = df_beta)
+#lim_beta5 <- pchisq(perc_beta5, df = df_beta)
+#out_beta95 <- data_beta[data_beta > perc_beta95]
+#out_beta5 <- data_beta[data_beta < perc_beta5]
+
+#plot(data_beta)
+#lines(x = perc_beta95)
+
+#plot(data_pi)
+#abline(h = perc_pi95, col = "red")
+#plot(density(data_pi))
+#abline(v = perc_pi95, col = "red")
+
+#plot(data_beta)
+#abline(h = perc_beta95, col = "red")
+#plot(density(data_beta))
+#abline(v = perc_beta95, col = "red")
+
+#plot(density(rchisq(1000, nb_windows)))
+#abline(v = perc_beta95, col = "red")
+
+
+#plot(density(data_fst))
+#abline(v = perc_fst95, col = "red")
+#plot(density(data_beta))
+#abline(v = perc_beta95, col = "red")
+#plot(density(rchisq(10000, nb_windows)))
+#abline(v = perc_beta95, col = "red")
+
+#plot(data_fst)
+#plot(data_beta)
+
+#ks.test(data_fst, "pnorm")
+```
+
+# Top 5% values
+
+```{r}
+percent <- 1
+
+### Fst
+snps_fst <- as.vector(na.omit(Fst_calc$FstSNP))
+
+  ### Fst filtered by window
+j <- 0
+snps_window <- list()
+
+for (bound in start_bound){
+  j <- j + 1 
+  snps_window[[j]] <- mean(snps_fst[as.integer(bound) : as.integer(bound + 99)])
+}
+  ###
+
+data_fst <- as.numeric(snps_window)
+
+top5_fst <- tail(sort(data_fst, decreasing = FALSE), n = round(length(data_fst) * percent / 100), digits = 0)
+lim_fst95 <- min(top5_fst)
+
+plot(data_fst ~ unlist(genomic_position), main = "Fst", xlab = "Genomic position", ylab = "Fst")
+abline(h = lim_fst95, col = "deepskyblue")
+abline(v = 5e6 -1)
+legend("topright", legend = c("Top 5 %"), fill = c("deepskyblue"))
+plot(density(data_fst), main = "Fst density")
+abline(v = lim_fst95, col = "deepskyblue")
+legend("topright", legend = c("Top 5 %"), fill = c("deepskyblue"))
+
+
+### Pi
+
+data_pi <- pop_summary$pi
+
+top5_pi <- tail(sort(data_pi, decreasing = TRUE), n = round(length(data_pi) * percent / 100), digits = 0)
+lim_pi95 <- min(top5_pi)
+
+  ### Genomic positions
+genomic_position <- list()
+i <- 0 
+for (ele in start_bound) {
+  i <- i + 1 
+  genomic_position[i] <- vcf_file@snps$pos[ele]
+}
+  ###
+
+plot(data_pi ~ unlist(genomic_position), main = "pi", xlab = "Genomic position", ylab = "pi")
+abline(h = lim_pi95, col = "purple")
+abline(v = 5e6 -1)
+legend("topright", legend = c("Top 5 %"), fill = c("purple"))
+
+plot(density(data_pi), main = "pi density")
+abline(v = lim_pi95, col = "purple")
+legend("topright", legend = c("Top 5 %"), fill = c("purple"))
+
+### Beta variance
+
+data_beta <- pop_summary$`variance Beta`
+
+top5_beta <- tail(sort(data_beta, decreasing = FALSE), n = round(length(data_pi) * percent / 100), digits = 0)
+lim_beta95 <- min(top5_beta)
+
+plot(data_beta ~ unlist(genomic_position), main = "Beta variance", xlab = "Genomic position", ylab = "Beta variance")
+abline(h = lim_beta95, col = "deeppink")
+abline(v = 5e6 -1)
+legend("topright", legend = c("Top 5 %"), fill = c("deeppink"))
+plot(density(data_beta), main = "Beta variance density")
+abline(v = lim_beta95, col = "deeppink")
+legend("topright", legend = c("Top 5 %"), fill = c("deeppink"))
+```
