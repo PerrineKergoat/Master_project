@@ -1,18 +1,21 @@
 #!/bin/bash
 
 library(vcfR)
-library(hierfstat)
 library(gaston)
+library(hierfstat)
 library(stats)
 library(StatMatch)
 library(dgof)
 library(outliers)
 library(nortest)
+library(SNPRelate)
 
 args <- commandArgs(trailingOnly = TRUE)
-replicateN <- args[[1]]
+job_id <- args[[1]]
+rep_nb <- args[[2]]
 
-vcf_file <- read.VCF(paste0("/work/FAC/FBM/DEE/jgoudet/default/pkergoat/2pop_1sel_500snps_100overlap/data/Simu_testFST_", replicateN, ".vcf"))
+vcf_file <- read.VCF(paste0("/work/FAC/FBM/DEE/jgoudet/default/pkergoat/2pop_1sel_500snps_100overlap/data/Recap_", 
+                            job_id, "_", rep_nb, ".vcf"))
 print(vcf_file)
 vcf_mat <- as.matrix(vcf_file)
 #beta_mat <- beta.dosage(vcf_mat)
@@ -184,8 +187,57 @@ for (lim in start_bound) {
   }
 }
 
+#extract snp id for the selected mutation
+position = vcf_file@snps$id[vcf_file@snps$pos == 5e6]
 
-save.image(paste0("/work/FAC/FBM/DEE/jgoudet/default/pkergoat/2pop_1sel_500snps_100overlap/data/TestFST_500_", replicateN, ".RData"))
-save(pop_summary, pop1_summary, pop2_summary, nb_windows, start_bound, list_start, freq_check, file = paste0("~/WORK/2pop_1sel_500snps_100overlap/data/Graph_testFST_500_", replicateN, ".RData"))
+#check count of alternate allele per pop
+genosPOP1selmut = vcf_mat[1:1000,position]
+genosPOP2selmut = vcf_mat[1001:2000,position]
+
+#estimate freq sel mut per pop
+frqPOP1 = sum(genosPOP1selmut)/2000
+frqPOP2 = sum(genosPOP2selmut)/2000
+freq_check <- c(frqPOP1, frqPOP2)
+
+#FST analysis
+showfile.gds(closeall=TRUE)
+write.bed.matrix(vcf_file, "./BED_object")
+snpgdsBED2GDS("BED_object", out.gdsfn = "./GDS_object")
+genomic_data = snpgdsOpen("GDS_object")
+
+Fst_calc <- snpgdsFst(gdsobj = genomic_data, 
+                      population = as.factor(c(rep(1, 1000), rep(2,1000))), 
+                      method="W&C84", remove.monosnp = FALSE, autosome.only=FALSE)
+Fst_calc_maf_01 <- snpgdsFst(gdsobj = genomic_data, 
+                             population = as.factor(c(rep(1, 1000), rep(2,1000))), 
+                             method="W&C84", remove.monosnp = FALSE, autosome.only=FALSE, 
+                             maf=0.01)
+
+# Fst filtered by window
+j <- 0
+snps_window <- list()
+snps_fst <- as.vector(na.omit(Fst_calc$FstSNP))
+
+for (bound in start_bound){
+  j <- j + 1 
+  snps_window[[j]] <- mean(snps_fst[as.integer(bound) : as.integer(bound + 99)])
+}
+
+# Genomic positions for the start bound of windows
+genomic_position <- list()
+i <- 0 
+for (ele in start_bound) {
+  i <- i + 1 
+  genomic_position[i] <- vcf_file@snps$pos[ele]
+}
+#
+
+
+
+save.image(paste0("/work/FAC/FBM/DEE/jgoudet/default/pkergoat/2pop_1sel_500snps_100overlap/data/Total_env_",
+                  job_id, "_", rep_nb, ".RData"))
+save(pop_summary, pop1_summary, pop2_summary, nb_windows, start_bound, list_start,
+     freq_check, Fst_calc_maf_01, Fst_calc, freq_check, vcf_file, snps_window, genomic_position,
+     file = paste0("~/WORK/2pop_1sel_500snps_100overlap/data/Graph_env_", job_id, "_", rep_nb, ".RData"))
 
 print("Script Comparison.R done")
