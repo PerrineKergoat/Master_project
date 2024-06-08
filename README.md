@@ -40,5 +40,5 @@ Three SLiM scripts are provided each one corresponding to different scenario of 
  2. [Sim_2pop_1sel_recomb.slim](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Simulations/Sim_2pop_1sel_recomb.slim): this script simulates as many sub-populations as required by the user connecting with migration accroding an island model. In this script, the recombination rate is varying, the genome is cut in 100 chunks with recombination rates determined by a gamma distribution.  
  3. [Sim_stepstone.slim](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Simulations/Sim_stepstone.slim): this script simulates as many sub-populations as required by the user connecting with migration accroding an steppingstone model. The population under selection must be manually changed in the script and is not used as a parameter to launch the Run_script.sh. 
 
- 
+### Recapitation of SLiM simulations using Python
 
