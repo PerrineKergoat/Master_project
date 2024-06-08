@@ -12,6 +12,7 @@ The simulation-beta analysis process in launch using the "Run_script.sh" it requ
 - data/
 - BED/
 - GDS/
+
 A rec_rate_out repository is also needed if the recombination rate analysis is made.
 
 <img width="326" alt="Screenshot 2024-06-08 at 16 53 29" src="https://github.com/PerrineKergoat/Master_project/assets/115696643/a33d30a3-4c33-4347-91e7-a16e85a41197">
