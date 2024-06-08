@@ -1,0 +1,72 @@
+initialize() {
+	initializeMutationRate(0);
+	initializeMutationType("m2", 0.8, "f", sel_coeff); // m2 : beneficial muatation (fully dominant, selection coefficient)
+	initializeGenomicElementType("g1", m2, 1.0);
+	m2.convertToSubstitution = F;
+	m2.mutationStackPolicy = "l";
+	initializeGenomicElement(g1, 0, 1e7-1); // 1 chromosome of 100 mega bases  
+	initializeRecombinationRate(recomb_rate); // mutation rate of 1e-6 for the whole chromosome par paire de base
+	initializeTreeSeq();
+}
+
+1 early() {
+	defineConstant("simID", getSeed());
+	nb_subpop = nb_pop; // nb of subpop
+	for (i in 1:nb_subpop){
+		sim.addSubpop(i, 1000);
+	}
+	for (i in 1:nb_subpop){
+		for (j in 1:nb_subpop){
+			if (i != j){
+				sim.subpopulations[i-1].setMigrationRates(j, 0.001);
+			}
+		}
+	}
+}
+
+1 late() {
+	
+	target = sample(p1.genomes, 1);
+	target.addNewDrawnMutation(m2, 5e6); // introduce the sweep mutation
+
+	sim.outputFull(tempdir() + "slim_" + simID + ".txt"); // save the state of the simulation
+}
+
+mutationEffect(m2, p2) { return 1.0; } // return --> 1-hs (fitness, h coeff dominance, s coeff selection)
+
+2:1000 early() {
+	if (sim.countOfMutationsOfType(m2) != 0) {
+		cat(simID + ": STILL PRESENT\n");
+		//sim.simulationFinished();
+	}
+	else {
+		cat(simID + ": LOST or FIXED – RESTARTING\n"); 
+		sim.readFromPopulationFile(tempdir() + "slim_" + simID + ".txt"); // go back to tick 1000
+		setSeed(rdunif(1, 0, asInteger(2^62) - 1)); // start a newly seeded run
+		
+		nb_subpop = 2; // nb of subpop
+		for (i in 1:nb_subpop){
+			for (j in 1:nb_subpop){
+				if (i != j){
+					sim.subpopulations[i-1].setMigrationRates(j, 0.001);
+				}
+			}
+		}
+			
+		//target = sample(p1.genomes, 1);
+		//target.addNewDrawnMutation(m2, 50000); // re-introduce the sweep mutation
+	}
+}
+
+600 late() {
+	sim.treeSeqOutput(path + "Simu_600_" + job_id + "_" + rep_nb + ".trees");
+}
+
+800 late() {
+        sim.treeSeqOutput(path + "Simu_800_" + job_id + "_" + rep_nb + ".trees");
+}
+
+1000 late() {
+	sim.simulationFinished();
+        sim.treeSeqOutput(path + "Simu_1000_" + job_id + "_" + rep_nb + ".trees");
+}
