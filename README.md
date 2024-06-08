@@ -30,7 +30,7 @@ Example:
 
 In the following example we simulate and analyse a population composed of 2 sub-populations with a selection coefficient for mutation under selection of s = 0.030 and a recombination rate of 1.e-8. 
 
-`sbatch Run_script.sh 2 0.030 1e-8`
+`$ sbatch Run_script.sh 2 0.030 1e-8`
 
 ### Simulation of populations with SLiM
 
