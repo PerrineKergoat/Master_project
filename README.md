@@ -4,9 +4,9 @@ This repository contains the scripts and a user guide of the beta method impleme
 
 The scripts presented are made to simulate a population decomposed in 2, 5 or 10 sub-populations linked by migration and analyse with the beta method the genomes of 1000 individuals among this population. 
 
-## User guide
+# User guide
 
-### Repository architecture
+## Repository architecture
 
 The simulation-beta analysis process in launch using the "Run_script.sh" it requires that all scripts are in a same repository using a SLURM cluster. In addition to the scripts, three directories are required 
 - data/
@@ -17,9 +17,9 @@ A rec_rate_out repository is also needed if the recombination rate analysis is m
 
 <img width="326" alt="Screenshot 2024-06-08 at 16 53 29" src="https://github.com/PerrineKergoat/Master_project/assets/115696643/a33d30a3-4c33-4347-91e7-a16e85a41197">
 
-### Scripts description
+## Scripts description
 
-#### Run script
+### Run script
 
 The [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh) is the script that coordinates the launch of all the simulation and beta analysis scripts. It must be run with three parameters: 
 1. the number of sub-populations simulated
@@ -32,7 +32,7 @@ In the following example we simulate and analyse a population composed of 2 sub-
 
 `sbatch Run_script.sh 2 0.030 1e-8`
 
-#### Simulation of populations 
+### Simulation of populations 
 
 Three SLiM scripts are provided each one corresponding to a different scenario
  
