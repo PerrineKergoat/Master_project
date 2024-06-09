@@ -19,6 +19,8 @@ A rec_rate_out repository is also needed if the recombination rate analysis is m
 
 ## Scripts description
 
+<img width="1369" alt="Screenshot 2024-06-09 at 11 56 40" src="https://github.com/PerrineKergoat/Master_project/assets/115696643/f54f072c-ee63-4f98-abaa-24565a6c7cbf">
+
 ### Run script
 
 The [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh) is the script that coordinates the launch of all the simulation and beta analysis scripts. It must be run with three parameters: 
