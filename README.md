@@ -39,10 +39,10 @@ To start the analysis of the replicates of a simulation the following command ca
 
 ## Repository architecture
 
-The simulation-beta analysis process in launch using the "Run_script.sh" it requires that all scripts are in a same repository using a SLURM cluster. In addition to the scripts, three directories are required 
-- data/
-- BED/
-- GDS/
+The simulation-beta analysis process in launch using the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh) it requires that all scripts are in a same repository using a SLURM cluster. In addition to the scripts, three directories are required 
+- `data/`: storage of all files produced by [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh)
+- `BED/`: storage of BED objects for the comparative Fst analysis
+- `GDS/`: storage of GDS objects for the comparative Fst analysis
 
 A rec_rate_out repository is also needed if the recombination rate analysis is made.
 
