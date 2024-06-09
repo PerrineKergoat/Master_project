@@ -40,13 +40,19 @@ Three SLiM scripts are provided each one corresponding to different scenario of 
  2. [Sim_2pop_1sel_recomb.slim](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Simulations/Sim_2pop_1sel_recomb.slim): this script simulates as many sub-populations as required by the user connecting with migration accroding an island model. In this script, the recombination rate is varying, the genome is cut in 100 chunks with recombination rates determined by a gamma distribution.  
  3. [Sim_stepstone.slim](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Simulations/Sim_stepstone.slim): this script simulates as many sub-populations as required by the user connecting with migration accroding an steppingstone model. The population under selection must be manually changed in the script and is not used as a parameter to launch the Run_script.sh. 
 
+The output of these scipt is a `.trees` file stored in the data repository.
+
 ### Recapitation of SLiM simulations using Python
 
 The [Recapitation.py](https://github.com/PerrineKergoat/Master_project/blob/ca293c6686c73951234345f36ced3a1fce81b6ea/Scripts/Simulations/Recapitation.py) script creates the evolutionary of the SLiM simulations, it adds the neutral mutation background to the genomes.
 
+The script use the `.trees` files previoously produced and creates a `.vcf` file as an output.
+
 ### Beta analysis of a population
 
 The beta analysis of the genomes to detect selection is implemented in the [Comparison.R](https://github.com/PerrineKergoat/Master_project/blob/ca293c6686c73951234345f36ced3a1fce81b6ea/Scripts/beta_analysis/Comparison.R) script. 
+
+This analysis is made based on a `.vcf` file containing all the individuals studied. It produces an `.RData` environment containing all data for the graphical analysis. 
 
 ### Analysis of replicates
 
@@ -55,3 +61,5 @@ The different simulations are replicated to ensure reliable results for the Mast
 Depending if the an analysis of the recombination rate around the beneficial mutation is expected, two scripts can be run with the bash script: 
 1. [Replicates.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates.R) that is usefull when no analysis of the recombination rate is desired
 2. [Replicates_rec_rate.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates_rec_rate.R) if the supplementary analysis is wanted
+
+This analysis of all the `.RData` files created for the replicated simulation and group them into one `.RData` file.
