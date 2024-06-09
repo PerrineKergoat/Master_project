@@ -72,7 +72,7 @@ This analysis of all the `.RData` files created for the replicated simulation an
 
 ### Data paths
 
-At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user (/!\ it must end with \). 
+At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user (/!\ it must end with "\"). 
 
 ```
 path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/"
