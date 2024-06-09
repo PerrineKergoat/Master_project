@@ -28,7 +28,9 @@ The [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb
 2. the selection coefficient
 3. the recombination rate.
 
-Example: 
+Another version of this script called [] is made to add a recombination rate analysis to the beta analysis. The same arguments are required. 
+
+_Example:_ 
 
 In the following example we simulate and analyse a population composed of 2 sub-populations with a selection coefficient for mutation under selection of s = 0.030 and a recombination rate of 1.e-8. 
 
@@ -72,7 +74,8 @@ This analysis of all the `.RData` files created for the replicated simulation an
 
 ### Data paths
 
-At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user (/!\ it must end with "\"). 
+At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user. 
+
 
 ```
 path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/"
