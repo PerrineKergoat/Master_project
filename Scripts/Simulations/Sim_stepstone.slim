@@ -1,10 +1,9 @@
 initialize() {
 	initializeMutationRate(0);
-	initializeMutationType("m1", 0.8, "f", 0.030); // m2 : beneficial muatation (fully dominant, selection coefficient)
+	initializeMutationType("m2", 0.8, "f", 0.030); // m2 : beneficial muatation (fully dominant, selection coefficient)
 	initializeGenomicElementType("g1", m2, 1.0);
 	initializeGenomicElement(g1, 0, 1e7-1); // 1 chromosome of 100 mega bases  
 	initializeRecombinationRate(1e-8);
-	
 	initializeTreeSeq();
 }
 
@@ -15,18 +14,16 @@ initialize() {
 		sim.addSubpop(i, 1000);
 	}
 	for (i in 1:(nb_subpop - 1)){
-		sim.subpopulations[i].setMigrationRates(i-1, 0.2);
+		sim.subpopulations[i].setMigrationRates(i-1, 0.002);
 	}		
 	for (i in 0:(nb_subpop - 2)){
-		sim.subpopulations[i].setMigrationRates(i+1, 0.05);
+		sim.subpopulations[i].setMigrationRates(i+1, 0.001);
 	}
 }
 
-
-
 1 late() {
 	
-	target = sample(p1.genomes, 1);
+	target = sample(p5.genomes, 1); //simulation happening in the population n°5 
 	target.addNewDrawnMutation(m2, 5e6); // introduce the sweep mutation
 
 	sim.outputFull(tempdir() + "slim_" + simID + ".txt"); // save the state of the simulation
@@ -36,8 +33,7 @@ mutationEffect(m2, p2) { return 1.0; } // return --> 1-hs (fitness, h coeff domi
 
 2:100 early() {
 	if (sim.countOfMutationsOfType(m2) != 0) {
-		cat(simID + ": STILL PRESENT\n");
-		//sim.simulationFinished();
+		//cat(simID + ": STILL PRESENT\n");
 	}
 	else {
 		cat(simID + ": LOST or FIXED – RESTARTING\n"); 
@@ -47,20 +43,17 @@ mutationEffect(m2, p2) { return 1.0; } // return --> 1-hs (fitness, h coeff domi
 		nb_subpop = 10; // nb of subpop		
 		
 		for (i in 1:(nb_subpop - 2)){
-			sim.subpopulations[i].setMigrationRates(i-1, 0.05);
+			sim.subpopulations[i].setMigrationRates(i-1, 0.001);
 		}	
 		for (i in (nb_subpop - 1):(nb_subpop - 1)){
-			sim.subpopulations[i].setMigrationRates(i-1, 0.1);
+			sim.subpopulations[i].setMigrationRates(i-1, 0.002);
 		}		
 		for (i in 1:(nb_subpop - 2)){
-			sim.subpopulations[i].setMigrationRates(i+1, 0.05);
+			sim.subpopulations[i].setMigrationRates(i+1, 0.001);
 		}
 		for (i in 0:0){
-			sim.subpopulations[i].setMigrationRates(i+1, 0.1);
+			sim.subpopulations[i].setMigrationRates(i+1, 0.002);
 		}
-			
-		//target = sample(p1.genomes, 1);
-		//target.addNewDrawnMutation(m2, 50000); // re-introduce the sweep mutation
 	}
 }
 
