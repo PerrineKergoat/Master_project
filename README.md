@@ -42,3 +42,8 @@ Three SLiM scripts are provided each one corresponding to different scenario of 
 
 ### Recapitation of SLiM simulations using Python
 
+The [Recapitation.py](https://github.com/PerrineKergoat/Master_project/blob/ca293c6686c73951234345f36ced3a1fce81b6ea/Scripts/Simulations/Recapitation.py) script creates the evolutionary of the SLiM simulations, it adds the neutral mutation background to the genomes.
+
+### Beta analysis of a population
+
+The beta analysis of the genomes to detect selection is implemented in the [Comparison.R](https://github.com/PerrineKergoat/Master_project/blob/ca293c6686c73951234345f36ced3a1fce81b6ea/Scripts/beta_analysis/Comparison.R) script. 
