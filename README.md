@@ -78,3 +78,16 @@ The same modification must be done for the [Replicates.R](https://github.com/Per
 ```
 path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/"
 ```
+### First subpopulation where mutation under selection appears 
+
+The population number where the beneficial mutation occurs for the first time is not an argument passed to scripts, it needs to be manually set up in the slim scripts. 
+
+```
+target = sample(p1.genomes, 1); //simulation happening in the subpopulation n°1
+```
+or 
+```
+target = sample(p5.genomes, 1); //simulation happening in the subpopulation n°5
+```
+
+
