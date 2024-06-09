@@ -4,7 +4,7 @@ This repository contains the scripts and a user guide of the beta method impleme
 
 The scripts presented are made to simulate a population decomposed in 2, 5 or 10 sub-populations linked by migration and analyse with the beta method the genomes of 1000 individuals among this population. 
 
-# User guide
+# Code description
 
 ## Repository architecture
 
@@ -65,3 +65,16 @@ Depending if the an analysis of the recombination rate around the beneficial mut
 2. [Replicates_rec_rate.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates_rec_rate.R) if the supplementary analysis is wanted
 
 This analysis of all the `.RData` files created for the replicated simulation and group them into one `.RData` file.
+
+# User guide
+
+## Scripts preparation 
+
+### Data paths
+
+Here is the beginig of the Run_script
+
+`gen_600="600"
+gen_800="800"
+gen_1000="1000"
+path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/" `
