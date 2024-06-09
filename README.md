@@ -18,7 +18,7 @@ path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2p
 ```
 ### First subpopulation where mutation under selection appears 
 
-The population number where the beneficial mutation occurs for the first time is not an argument passed to scripts, it needs to be manually set up in the slim scripts. 
+The population number where the beneficial mutation occurs for the first time is not an argument passed to scripts, it needs to be manually set up in the [slim scripts](https://github.com/PerrineKergoat/Master_project/tree/3b517e2fa04c190a96d74efd56d59882c796bee2/Scripts/Simulations). 
 
 ```
 target = sample(p1.genomes, 1); //simulation happening in the subpopulation n°1
