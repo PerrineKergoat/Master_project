@@ -60,7 +60,7 @@ This analysis is made based on a `.vcf` file containing all the individuals stud
 
 The different simulations are replicated to ensure reliable results for the Master Project. The analysis of those replicates is launched with the [Summary_replicates_script.sh](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Summary_replicates_script.sh) script.
 
-Depending if the an analysis of the recombination rate around the beneficial mutation is expected, two scripts can be run with the bash script: 
+Depending if the analysis of the recombination rate around the beneficial mutation is expected, two scripts can be run with the bash script: 
 1. [Replicates.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates.R) that is usefull when no analysis of the recombination rate is desired
 2. [Replicates_rec_rate.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates_rec_rate.R) if the supplementary analysis is wanted
 
