@@ -6,37 +6,6 @@ The scripts presented are made to simulate a population decomposed in 2, 5 or 10
 
 # User guide
 
-## Scripts preparation 
-
-### Data paths
-
-At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user. 
-The same modification must be done for the [Replicates.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates.R) and [Replicates_rec_rate.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates_rec_rate.R) scripts
-
-```
-path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/"
-```
-### First subpopulation where mutation under selection appears 
-
-The population number where the beneficial mutation occurs for the first time is not an argument passed to scripts, it needs to be manually set up in the [slim scripts](https://github.com/PerrineKergoat/Master_project/tree/3b517e2fa04c190a96d74efd56d59882c796bee2/Scripts/Simulations). 
-
-```
-target = sample(p1.genomes, 1); //mutation happening in the subpopulation n°1
-```
-or 
-```
-target = sample(p5.genomes, 1); //mutation happening in the subpopulation n°5
-```
-
-## Script launch
-
-To start a simulation and its analysis the following command can be used: `$ sbatch Run_script.sh nb_of_subpopulations selection_coefficient recombination_rate`
-
-To start the analysis of the replicates of a simulation the following command can be used: `$ sbatch Summary_replicates_script.sh cluster_job_id nb_of_replicates threshold_percentile`
-
-
-# Code description
-
 ## Repository architecture
 
 The simulation-beta analysis process in launch using the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh) it requires that all scripts are in a same repository using a SLURM cluster. In addition to the scripts, three directories are required 
@@ -101,3 +70,32 @@ To run those scripts, arguments are required:
 3. the threshold wanted to consider kinship variance as extreme and thus create a signal in the genomic window, test run showed that the 99th percentile is a good threshold. In this case the argument passed to the script is 1. 
 
 This analysis of all the `.RData` files created for the replicated simulation and group them into one `.RData` file.
+
+## Scripts preparation 
+
+### Data paths
+
+At the begining of the [Run_script.sh](https://github.com/PerrineKergoat/Master_project/blob/c7b0bb6feeb6b8c0ee1b228030d67950cc566a56/Scripts/Run_script.sh), path to data repository needs to be changed by the user. 
+The same modification must be done for the [Replicates.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates.R) and [Replicates_rec_rate.R](https://github.com/PerrineKergoat/Master_project/blob/9e54802e65dfe96ce27c7a8ae53740ac163bad77/Scripts/Replicates_analysis/Replicates_rec_rate.R) scripts. 
+
+```
+path_data="/work/FAC/FBM/DEE/jgoudet/default/pkergoat/Replicates/Island_model/2pop/data/"
+```
+### First subpopulation where mutation under selection appears 
+
+The population number where the beneficial mutation occurs for the first time is not an argument passed to scripts, it needs to be manually set up in the [slim scripts](https://github.com/PerrineKergoat/Master_project/tree/3b517e2fa04c190a96d74efd56d59882c796bee2/Scripts/Simulations). 
+
+```
+target = sample(p1.genomes, 1); //mutation happening in the subpopulation n°1
+```
+or 
+```
+target = sample(p5.genomes, 1); //mutation happening in the subpopulation n°5
+```
+
+## Script launch
+
+To run a simulation and its analysis from a SLURM cluster, the following command can be used: `$ sbatch Run_script.sh nb_of_subpopulations selection_coefficient recombination_rate`
+
+To run the analysis of the replicates of a simulation from a SLURM cluster, the following command can be used: `$ sbatch Summary_replicates_script.sh cluster_job_id nb_of_replicates threshold_percentile`
+
