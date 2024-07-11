@@ -93,7 +93,7 @@ or
 target = sample(p5.genomes, 1); //mutation happening in the subpopulation n°5
 ```
 
-## Script launch
+## Scripts run
 
 To run a simulation and its analysis from a SLURM cluster, the following command can be used: `$ sbatch Run_script.sh nb_of_subpopulations selection_coefficient recombination_rate`
 
