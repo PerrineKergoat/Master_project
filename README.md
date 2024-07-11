@@ -48,7 +48,7 @@ The output of these scipt is a `.trees` file stored in the data repository. In a
 
 The [Recapitation.py](https://github.com/PerrineKergoat/Master_project/blob/ca293c6686c73951234345f36ced3a1fce81b6ea/Scripts/Simulations/Recapitation.py) script creates the evolutionary of the SLiM simulations, it adds the neutral mutation background to the genomes.
 
-The script use the `.trees` files previoously produced and creates a `.vcf` file as an output.
+The script use the `.trees` files previously produced and creates a `.vcf` file as an output.
 
 ### Beta analysis of a population
 
